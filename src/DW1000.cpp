@@ -103,7 +103,7 @@ const byte DW1000Class::BIAS_900_64[] = {147, 133, 117, 99, 75, 50, 29, 0, 24, 4
 	// default ESP8266 frequency is 80 Mhz, thus divide by 4 is 20 MHz
 	const SPISettings DW1000Class::_fastSPI = SPISettings(20000000L, MSBFIRST, SPI_MODE0);
 #else
-	const SPISettings DW1000Class::_fastSPI = SPISettings(16000000L, MSBFIRST, SPI_MODE0);
+	const SPISettings DW1000Class::_fastSPI = SPISettings(8000000L, MSBFIRST, SPI_MODE0);
 #endif
 const SPISettings DW1000Class::_slowSPI = SPISettings(2000000L, MSBFIRST, SPI_MODE0);
 const SPISettings* DW1000Class::_currentSPI = &_fastSPI;
@@ -168,7 +168,11 @@ void DW1000Class::begin(uint8_t irq, uint8_t rst) {
 	// Configure the IRQ pin as INPUT. Required for correct interrupt setting for ESP8266
     	pinMode(irq, INPUT);
 	// start SPI
+#ifdef ESP32
+	SPI.begin(17, 34, 23);  // SCK, MISO, MOSI (custom ESP32 pins)
+#else
 	SPI.begin();
+#endif
 #if !defined(ESP8266) && !defined(ESP32)
 	SPI.usingInterrupt(digitalPinToInterrupt(irq)); // not every board support this, e.g. ESP8266, ESP32
 #endif
